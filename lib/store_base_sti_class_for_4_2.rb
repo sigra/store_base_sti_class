@@ -113,6 +113,41 @@ if ActiveRecord::VERSION::STRING =~ /^4\.2/
         end
       end
 
+      class PredicateBuilder
+        def self.polymorphic_base_class_from_value(value)
+          case value
+            when Relation
+              # START PATCH
+              # original:
+              # value.klass.base_class
+
+              ActiveRecord::Base.store_base_sti_class ? value.klass.base_class : value.klass
+
+              # END PATCH
+            when Array
+              val = value.compact.first
+
+              # START PATCH
+              # original:
+              # val.class.base_class if val.is_a?(Base)
+
+              if val.is_a?(Base)
+                ActiveRecord::Base.store_base_sti_class ? val.class.base_class : val.class
+              end
+
+              # END PATCH
+            when Base
+              # START PATCH
+              # original:
+              # value.class.base_class
+
+              ActiveRecord::Base.store_base_sti_class ? value.class.base_class : value.class
+
+              # END PATCH
+          end
+        end
+      end
+
       class Preloader
         class Association
 
